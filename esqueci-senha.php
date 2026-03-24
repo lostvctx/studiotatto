@@ -3,14 +3,16 @@ session_start();
 require_once 'includes/config.php';
 require_once 'includes/funcoes.php';
 
-$mensagem = '';
+$erro = '';
+$linkWhatsapp = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $email = limparDados($_POST['email']);
+    $telefone = limparDados($_POST['telefone']);
 
-    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
-    $stmt->execute([$email]);
+    // 🔍 busca usuário pelo telefone
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE celular = ?");
+    $stmt->execute([$telefone]);
     $user = $stmt->fetch();
 
     if ($user) {
@@ -25,13 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
         $stmt->execute([$token, $expira, $user['idUsuario']]);
 
-        // 🔥 LINK (depois vamos mandar por email)
-        $link = "http://localhost/seu-projeto/resetar-senha.php?token=$token";
+        $link = "http://localhost/seuprojeto/resetar-senha.php?token=$token";
 
-        $mensagem = "Link de recuperação:<br><a href='$link'>$link</a>";
+        // 🔥 mensagem pro zap
+        $mensagem = urlencode("🔑 Recuperação de senha\n\nClique no link:\n$link");
 
+        // 🔥 link WhatsApp
+        $linkWhatsapp = "https://wa.me/55$telefone?text=$mensagem";
     } else {
-        $mensagem = "Email não encontrado!";
+        $erro = "Telefone não encontrado!";
     }
 }
 ?>
@@ -41,27 +45,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <div class="auth-icon">🔑</div>
+            <div class="auth-icon">📱</div>
             <h2 class="auth-title">Recuperar Senha</h2>
-            <p class="auth-subtitle">Digite seu email para recuperar acesso</p>
+            <p class="auth-subtitle">Digite seu telefone</p>
         </div>
 
-        <?php if ($mensagem): ?>
-            <div class="alert alert-success"><?= $mensagem ?></div>
+        <?php if ($erro): ?>
+            <div class="alert alert-error"><?php echo $erro; ?></div>
         <?php endif; ?>
 
         <form method="POST" class="auth-form">
             <div class="form-group">
-                <label>E-mail</label>
-                <input type="email" name="email" required class="form-input">
+                <label>Telefone (somente números)</label>
+                <input type="text" name="telefone" placeholder="11999999999" required class="form-input">
             </div>
 
-            <button type="submit" class="btn-submit">Enviar link</button>
+            <button type="submit" class="btn-submit">Enviar via WhatsApp</button>
         </form>
 
-        <div class="auth-footer">
-            <a href="login.php" class="link-red">Voltar ao login</a>
-        </div>
+        <?php if ($linkWhatsapp): ?>
+            <div class="alert alert-success" style="margin-top:15px;">
+                <p><strong>Clique para enviar no WhatsApp:</strong></p>
+                <a href="<?php echo $linkWhatsapp; ?>" target="_blank">
+                    📲 Abrir WhatsApp
+                </a>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
