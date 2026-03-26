@@ -33,6 +33,7 @@ include '../includes/header.php';
         <div class="client-header">
             <h1 class="client-title">Olá, <span class="text-red"><?php echo htmlspecialchars($usuario_nome); ?></span>!</h1>
             <div class="tabs">
+                <button class="tab-btn active" data-tab="">🔥 Explorar Tatuagens</button>
                 <button class="tab-btn active" data-tab="agendamentos">📅 Meus Agendamentos</button>
                 <button class="tab-btn" data-tab="salvas">❤️ Tatuagens Salvas</button>
                 <button class="tab-btn" data-tab="novo">➕ Novo Agendamento</button>
